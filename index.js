@@ -35,9 +35,51 @@ async function run() {
         const result = userCollection.insertOne(user);
         res.send(result);
       })
-      app.get("/products",async(req,res)=>{
-        
-      })
+      app.get("/products", async (req, res) => {
+        const { page = 1, limit = 6, search, brand, category, minPrice = 0, maxPrice = Infinity, sortBy } = req.query;
+      
+        const query = {};
+      
+        // Search
+        if (search) {
+          query.productName = { $regex: search, $options: "i" };
+        }
+      
+        // Filters
+        if (brand) {
+          query.brand = brand;
+        }
+      
+        if (category) {
+          query.category = category;
+        }
+      
+        if (minPrice !== undefined && maxPrice !== undefined) {
+          query.price = { $gte: parseFloat(minPrice), $lte: parseFloat(maxPrice) };
+        }
+      
+        // Sorting
+        const sortQuery = {};
+        if (sortBy) {
+          const [field, order] = sortBy.split(':');
+          sortQuery[field] = order === 'asc' ? 1 : -1;
+        } else {
+          sortQuery.createdAt = -1; // Default sort by createdAt descending
+        }
+      
+        // Pagination
+        const skip = (page - 1) * limit;
+        const totalProducts = await productCollection.countDocuments(query);
+        const products = await productCollection.find(query).sort(sortQuery).skip(skip).limit(parseInt(limit)).toArray();
+      
+        res.send({
+          products,
+          totalProducts,
+          totalPages: Math.ceil(totalProducts / limit),
+          currentPage: parseInt(page),
+        });
+      });
+      
     
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
