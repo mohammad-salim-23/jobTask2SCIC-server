@@ -21,6 +21,25 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const userCollection = client.db("jobTask2").collection("users");
+    const productCollection = client.db("jobTask2").collection("products");
+    app.post('/users',async(req,res)=>{
+        const user = req.body;
+        user.status = 'user';
+        // insert email id users doesn't exist
+        const query = {email:user.email};
+        const existingUser = await userCollection.findOne(query);
+        if(existingUser){
+          console.log(existingUser);
+          return res.send({message:'user already exists',insertedId:null})
+        }
+        const result = userCollection.insertOne(user);
+        res.send(result);
+      })
+      app.get("/products",async(req,res)=>{
+        const result = await productCollection.find().toArray();
+        res.send(result);
+      })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
