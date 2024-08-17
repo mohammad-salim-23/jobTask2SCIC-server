@@ -1,12 +1,14 @@
 const express = require("express");
 const app = express();
+require("dotenv").config();
 const cors = require("cors");
-const port = process.env.PORT || 5000;app.use(cors());
+const port = process.env.PORT || 5000;
+app.use(cors());
 app.use(express.json());
 
 
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ipsrkdy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USERS}:${process.env.DB_PASS}@cluster0.ipsrkdy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -21,8 +23,8 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const userCollection = client.db("jobTask2").collection("users");
-    const productCollection = client.db("jobTask2").collection("products");
+    const userCollection = client.db("JobTask2").collection("users");
+    const productCollection = client.db("JobTask2").collection("products");
     app.post('/users',async(req,res)=>{
         const user = req.body;
         user.status = 'user';
